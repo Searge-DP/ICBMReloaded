@@ -9,7 +9,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -19,7 +18,6 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -41,14 +39,10 @@ import icbmrl.core.common.blocks.BlockSulfurOre;
 import icbmrl.core.common.entity.EntityFlyingBlock;
 import icbmrl.core.common.entity.EntityFragments;
 import icbmrl.core.common.init.InitConfig;
+import icbmrl.core.common.init.InitModMetadata;
+import icbmrl.core.common.items.BaseItem;
 import icbmrl.core.common.items.ItemAntidote;
-import icbmrl.core.common.items.ItemComputer;
-import icbmrl.core.common.items.ItemPoisonPowder;
-import icbmrl.core.common.items.ItemSignalDisrupter;
-import icbmrl.core.common.items.ItemSulfurDust;
-import icbmrl.core.common.items.ItemTracker;
 import icbmrl.core.common.lib.ModInfo;
-import icbmrl.core.common.lib.TabICBM;
 
 /**
  * Main class for ICBM core to run on. The core will need to be initialized by
@@ -79,7 +73,7 @@ public final class ICBMCore
 
 	public static Block blockSulfurOre, blockRadioactive, blockCombatRail, blockBox;
 
-	public static Item itemSulfurDust, itemPoisonPowder;
+	public static Item itemSulfurDust, itemSaltpeterDust, itemPoisonPowder;
 
 	public static final Logger LOGGER = Logger.getLogger(ModInfo.NAME);
 
@@ -87,7 +81,7 @@ public final class ICBMCore
 	public void preInit(FMLPreInitializationEvent event)
 	{
 		InitConfig.initConfig(event);
-		NetworkRegistry.INSTANCE.registerGuiHandler(this, proxy);
+		// NetworkRegistry.INSTANCE.registerGuiHandler(this, proxy);
 		MinecraftForge.EVENT_BUS.register(INSTANCE);
 
 		// Blockss
@@ -111,18 +105,24 @@ public final class ICBMCore
 		GameRegistry.registerBlock(blockCombatRail, "BlockCombatRail");
 
 		// ITEMS
-		itemPoisonPowder = new ItemPoisonPowder().setUnlocalizedName("itemPoisonPowder");
+		itemPoisonPowder = new BaseItem().setUnlocalizedName("itemPoisonPowder");
 		GameRegistry.registerItem(itemPoisonPowder, "ItemPoisonPowder");
-		itemSulfurDust = new ItemSulfurDust().setUnlocalizedName("itemSulfurDust");
+		itemSulfurDust = new BaseItem().setUnlocalizedName("itemSulfurDust");
 		GameRegistry.registerItem(itemSulfurDust, "ItemSulfurDust");
+		itemSaltpeterDust = new BaseItem().setUnlocalizedName("itemSaltpeterDust");
+		GameRegistry.registerItem(itemSaltpeterDust, "ItemSaltpeterDust");
 		itemAntidote = new ItemAntidote().setUnlocalizedName("itemAntidote");
 		GameRegistry.registerItem(itemAntidote, "ItemAntidote");
-		itemSignalDisrupter = new ItemSignalDisrupter().setUnlocalizedName("itemSignalDisrupter");
-		GameRegistry.registerItem(itemSignalDisrupter, "ItemSignalDisrupter");
-		itemTracker = new ItemTracker().setUnlocalizedName("itemTracker");
-		GameRegistry.registerItem(itemTracker, "ItemTracker");
-		itemHackingComputer = new ItemComputer().setUnlocalizedName("itemHackingComputer");
-		GameRegistry.registerItem(itemHackingComputer, "ItemHackingComputer");
+		// itemSignalDisrupter = new
+		// ItemSignalDisrupter().setUnlocalizedName("itemSignalDisrupter");
+		// GameRegistry.registerItem(itemSignalDisrupter,
+		// "ItemSignalDisrupter");
+		// itemTracker = new ItemTracker().setUnlocalizedName("itemTracker");
+		// GameRegistry.registerItem(itemTracker, "ItemTracker");
+		// itemHackingComputer = new
+		// ItemComputer().setUnlocalizedName("itemHackingComputer");
+		// GameRegistry.registerItem(itemHackingComputer,
+		// "ItemHackingComputer");
 
 		// sulfurGenerator = new OreGeneratorICBM("Sulfur Ore", "oreSulfur", new
 		// ItemStack(blockSulfurOre), 0, 40, 20,
@@ -149,16 +149,12 @@ public final class ICBMCore
 		OreDictionary.registerOre("dustSulfur", new ItemStack(itemSulfurDust, 1, 0));
 		OreDictionary.registerOre("dustSaltpeter", new ItemStack(itemSulfurDust, 1, 1));
 		// OreGenerator.addOre(sulfurGenerator);
-		if (!Loader.isModLoaded("ICBM|Sentry") && !Loader.isModLoaded("ICBM|Explosion"))
-			TabICBM.itemStack = new ItemStack(blockProximityDetector);
-
-		proxy.preInit();
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		ModMetadata.setModMetadata(ModInfo.NAME, ModInfo.NAME, metadata);
+		InitModMetadata.setModMetadata(ModInfo.NAME, ModInfo.NAME, metadata);
 
 		EntityRegistry.registerModEntity(EntityFlyingBlock.class, "ICBMGravityBlocks", 0, this, 50, 15, true);
 		EntityRegistry.registerModEntity(EntityFragments.class, "ICBMFragment", 1, this, 40, 8, true);

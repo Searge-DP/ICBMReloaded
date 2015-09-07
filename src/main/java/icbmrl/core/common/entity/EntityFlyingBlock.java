@@ -1,208 +1,203 @@
 package icbmrl.core.common.entity;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
+import io.netty.buffer.ByteBuf;
 
-/** @author Calclavia */
+/**
+ * @author Calclavia
+ */
 public class EntityFlyingBlock extends Entity implements IEntityAdditionalSpawnData
 {
-    public int blockID = 0;
-    public int metadata = 0;
+	public Block block = null;
+	public int metadata = 0;
 
-    public float yawChange = 0;
-    public float pitchChange = 0;
+	public float yawChange = 0;
+	public float pitchChange = 0;
 
-    public float gravity = 0.045f;
+	public float gravity = 0.045f;
 
-    public EntityFlyingBlock(World world)
-    {
-        super(world);
-        this.ticksExisted = 0;
-        this.preventEntitySpawning = true;
-        this.isImmuneToFire = true;
-        this.setSize(1F, 1F);
-    }
+	public EntityFlyingBlock(World world)
+	{
+		super(world);
+		this.ticksExisted = 0;
+		this.preventEntitySpawning = true;
+		this.isImmuneToFire = true;
+		this.setSize(1F, 1F);
+	}
 
-    public EntityFlyingBlock(World world, Vector3 position, int blockID, int metadata)
-    {
-        super(world);
-        this.isImmuneToFire = true;
-        this.ticksExisted = 0;
-        setSize(0.98F, 0.98F);
-        yOffset = height / 2.0F;
-        setPosition(position.x + 0.5, position.y, position.z + 0.5);
-        motionX = 0D;
-        motionY = 0D;
-        motionZ = 0D;
-        this.blockID = blockID;
-        this.metadata = metadata;
-    }
+	public EntityFlyingBlock(World world, Vec3 position, Block block, int metadata)
+	{
+		super(world);
+		this.isImmuneToFire = true;
+		this.ticksExisted = 0;
+		setSize(0.98F, 0.98F);
+		yOffset = height / 2.0F;
+		setPosition(position.xCoord + 0.5, position.yCoord, position.zCoord + 0.5);
+		motionX = 0D;
+		motionY = 0D;
+		motionZ = 0D;
+		this.block = block;
+		this.metadata = metadata;
+	}
 
-    public EntityFlyingBlock(World world, Vector3 position, int blockID, int metadata, float gravity)
-    {
-        this(world, position, blockID, metadata);
-        this.gravity = gravity;
-    }
+	public EntityFlyingBlock(World world, Vec3 position, Block block, int metadata, float gravity)
+	{
+		this(world, position, block, metadata);
+		this.gravity = gravity;
+	}
 
-    @Override
-    public String getEntityName()
-    {
-        return "Flying Block";
-    }
+	@Override
+	protected void entityInit()
+	{
+	}
 
-    @Override
-    public void writeSpawnData(ByteArrayDataOutput data)
-    {
-        data.writeInt(this.blockID);
-        data.writeInt(this.metadata);
-        data.writeFloat(this.gravity);
-        data.writeFloat(yawChange);
-        data.writeFloat(pitchChange);
-    }
+	@Override
+	public void onUpdate()
+	{
+		if (this.block == null || this.posY > 400 || this.block == Blocks.piston_extension || this.block == Blocks.flowing_water
+				|| this.block == Blocks.flowing_lava)
+		{
+			this.setDead();
+			return;
+		}
 
-    @Override
-    public void readSpawnData(ByteArrayDataInput data)
-    {
-        blockID = data.readInt();
-        metadata = data.readInt();
-        gravity = data.readFloat();
-        yawChange = data.readFloat();
-        pitchChange = data.readFloat();
-    }
+		this.motionY -= gravity;
 
-    @Override
-    protected void entityInit()
-    {
-    }
+		if (this.isCollided)
+		{
+			// this.pushOutOfBlocks(this.posX, (this.boundingBox.minY +
+			// this.boundingBox.maxY) / 2.0D, this.posZ);
+		}
 
-    @Override
-    public void onUpdate()
-    {
-        if (this.blockID >= Block.blocksList.length)
-        {
-            this.setDead();
-            return;
-        }
+		this.moveEntity(this.motionX, this.motionY, this.motionZ);
 
-        if (this.posY > 400 || Block.blocksList[this.blockID] == null || this.blockID == ResonantEngine.blockMulti.blockID || this.blockID == Block.pistonExtension.blockID || this.blockID == Block.waterMoving.blockID || this.blockID == Block.lavaMoving.blockID)
-        {
-            this.setDead();
-            return;
-        }
+		if (this.yawChange > 0)
+		{
+			this.rotationYaw += this.yawChange;
+			this.yawChange -= 2;
+		}
 
-        this.motionY -= gravity;
+		if (this.pitchChange > 0)
+		{
+			this.rotationPitch += this.pitchChange;
+			this.pitchChange -= 2;
+		}
 
-        if (this.isCollided)
-        {
-            this.pushOutOfBlocks(this.posX, (this.boundingBox.minY + this.boundingBox.maxY) / 2.0D, this.posZ);
-        }
+		if ((this.onGround && this.ticksExisted > 20) || this.ticksExisted > 20 * 120)
+		{
+			this.setBlock();
+			return;
+		}
 
-        this.moveEntity(this.motionX, this.motionY, this.motionZ);
+		this.ticksExisted++;
+	}
 
-        if (this.yawChange > 0)
-        {
-            this.rotationYaw += this.yawChange;
-            this.yawChange -= 2;
-        }
+	public void setBlock()
+	{
+		if (!this.worldObj.isRemote)
+		{
+			int i = MathHelper.floor_double(posX);
+			int j = MathHelper.floor_double(posY);
+			int k = MathHelper.floor_double(posZ);
 
-        if (this.pitchChange > 0)
-        {
-            this.rotationPitch += this.pitchChange;
-            this.pitchChange -= 2;
-        }
+			this.worldObj.setBlock(i, j, k, block, this.metadata, 2);
+		}
 
-        if ((this.onGround && this.ticksExisted > 20) || this.ticksExisted > 20 * 120)
-        {
-            this.setBlock();
-            return;
-        }
+		this.setDead();
+	}
 
-        this.ticksExisted++;
-    }
+	/** Checks to see if and entity is touching the missile. If so, blow up! */
 
-    public void setBlock()
-    {
-        if (!this.worldObj.isRemote)
-        {
-            int i = MathHelper.floor_double(posX);
-            int j = MathHelper.floor_double(posY);
-            int k = MathHelper.floor_double(posZ);
+	@Override
+	public AxisAlignedBB getCollisionBox(Entity par1Entity)
+	{
+		// Make sure the entity is not an item
+		if (par1Entity instanceof EntityLiving)
+		{
+			if (this.block != null)
+			{
+				if (!(block instanceof BlockLiquid) && (this.motionX > 2 || this.motionY > 2 || this.motionZ > 2))
+				{
+					int damage = (int) (1.2 * (Math.abs(this.motionX) + Math.abs(this.motionY) + Math.abs(this.motionZ)));
+					((EntityLiving) par1Entity).attackEntityFrom(DamageSource.fallingBlock, damage);
+				}
+			}
+		}
 
-            this.worldObj.setBlock(i, j, k, this.blockID, this.metadata, 2);
-        }
+		return null;
+	}
 
-        this.setDead();
-    }
+	@Override
+	protected void writeEntityToNBT(NBTTagCompound nbttagcompound)
+	{
+		nbttagcompound.setInteger("metadata", this.metadata);
+		nbttagcompound.setInteger("blockID", Block.getIdFromBlock(block));
+		nbttagcompound.setFloat("gravity", this.gravity);
+	}
 
-    /** Checks to see if and entity is touching the missile. If so, blow up! */
+	@Override
+	protected void readEntityFromNBT(NBTTagCompound nbttagcompound)
+	{
+		this.metadata = nbttagcompound.getInteger("metadata");
+		this.block = Block.getBlockById(nbttagcompound.getInteger("blockID"));
+		this.gravity = nbttagcompound.getFloat("gravity");
+	}
 
-    @Override
-    public AxisAlignedBB getCollisionBox(Entity par1Entity)
-    {
-        // Make sure the entity is not an item
-        if (par1Entity instanceof EntityLiving)
-        {
-            if (Block.blocksList[this.blockID] != null)
-            {
-                if (!(Block.blocksList[this.blockID] instanceof BlockFluid) && (this.motionX > 2 || this.motionY > 2 || this.motionZ > 2))
-                {
-                    int damage = (int) (1.2 * (Math.abs(this.motionX) + Math.abs(this.motionY) + Math.abs(this.motionZ)));
-                    ((EntityLiving) par1Entity).attackEntityFrom(DamageSource.fallingBlock, damage);
-                }
-            }
-        }
+	@Override
+	public float getShadowSize()
+	{
+		return 0.5F;
+	}
 
-        return null;
-    }
+	@Override
+	public boolean canBePushed()
+	{
+		return true;
+	}
 
-    @Override
-    protected void writeEntityToNBT(NBTTagCompound nbttagcompound)
-    {
-        nbttagcompound.setInteger("metadata", this.metadata);
-        nbttagcompound.setInteger("blockID", this.blockID);
-        nbttagcompound.setFloat("gravity", this.gravity);
-    }
+	@Override
+	protected boolean canTriggerWalking()
+	{
+		return true;
+	}
 
-    @Override
-    protected void readEntityFromNBT(NBTTagCompound nbttagcompound)
-    {
-        this.metadata = nbttagcompound.getInteger("metadata");
-        this.blockID = nbttagcompound.getInteger("blockID");
-        this.gravity = nbttagcompound.getFloat("gravity");
-    }
+	@Override
+	public boolean canBeCollidedWith()
+	{
+		return true;
+	}
 
-    @Override
-    public float getShadowSize()
-    {
-        return 0.5F;
-    }
+	@Override
+	public void writeSpawnData(ByteBuf data)
+	{
+		data.writeInt(Block.getIdFromBlock(this.block));
+		data.writeInt(this.metadata);
+		data.writeFloat(this.gravity);
+		data.writeFloat(yawChange);
+		data.writeFloat(pitchChange);
 
-    @Override
-    public boolean canBePushed()
-    {
-        return true;
-    }
+	}
 
-    @Override
-    protected boolean canTriggerWalking()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean canBeCollidedWith()
-    {
-        return true;
-    }
+	@Override
+	public void readSpawnData(ByteBuf data)
+	{
+		block = Block.getBlockById(data.readInt());
+		metadata = data.readInt();
+		gravity = data.readFloat();
+		yawChange = data.readFloat();
+		pitchChange = data.readFloat();
+	}
 }

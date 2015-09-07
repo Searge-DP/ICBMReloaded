@@ -6,7 +6,7 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import icbmrl.core.common.ICBMCore;
-import icbmrl.core.common.blocks.TileProximityDetector;
+import icbmrl.core.common.tile.TileProximityDetector;
 import scala.Unit;
 
 public class GuiProximityDetector extends GuiICBM

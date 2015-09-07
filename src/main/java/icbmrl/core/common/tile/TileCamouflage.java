@@ -1,4 +1,4 @@
-package icbmrl.core.common.blocks;
+package icbmrl.core.common.tile;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;

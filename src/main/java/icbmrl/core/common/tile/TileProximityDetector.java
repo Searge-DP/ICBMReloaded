@@ -1,4 +1,4 @@
-package icbmrl.core.common.blocks;
+package icbmrl.core.common.tile;
 
 import java.util.HashSet;
 import java.util.List;

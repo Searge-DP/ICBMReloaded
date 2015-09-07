@@ -5,9 +5,9 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
 
 import icbmrl.core.common.ICBMCore;
-import icbmrl.core.common.lib.ModInfo;
 
 /**
  * World generated block
@@ -19,16 +19,14 @@ public class BlockSulfurOre extends Block
 	public BlockSulfurOre()
 	{
 		super(Material.rock);
-		this.setUnlocalizedName(ModInfo.PREFIX + "oreSulfur");
-		this.setTextureName(ModInfo.PREFIX + "oreSulfur");
 		this.setCreativeTab(CreativeTabs.tabBlock);
 		this.setHardness(3.0f);
 	}
 
 	@Override
-	public int idDropped(int id, Random rand, int meta)
+	public Item getItemDropped(int p_149650_1_, Random p_149650_2_, int p_149650_3_)
 	{
-		return ICBMCore.itemSulfurDust.itemID;
+		return ICBMCore.itemSulfurDust;
 	}
 
 	@Override

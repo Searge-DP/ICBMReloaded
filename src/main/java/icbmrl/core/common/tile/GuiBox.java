@@ -1,4 +1,4 @@
-package icbmrl.core.common.tiles;
+package icbmrl.core.common.tile;
 
 import net.minecraft.entity.player.EntityPlayer;
 
